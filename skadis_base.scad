@@ -1,3 +1,4 @@
+
 module skadis_base() {
     translate([-4.5/2, 4.6, 22]) rotate([90, 0, 0]) union() {
         cube([4.5, 10, 4.6]);
@@ -6,7 +7,8 @@ module skadis_base() {
     }
 }
 
-//difference() {
-//    cube([60, 60, 4.6], center = true);
-//    skadis_base();
-//}
+function SKADIS_HINGE_CENTER() = 5+(22/2);
+function SKADIS_TOTAL_HEIGHT() = 22+5+10;
+function SKADIS_TOTAL_DEPTH() = 5+4.5;
+
+skadis_base();
