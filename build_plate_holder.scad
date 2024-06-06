@@ -1,4 +1,4 @@
-NUMBER_OF_PLATES = 1;
+NUMBER_OF_PLATES = 3;
 BUILD_PLATE_WIDTH = 120;
 EXTRA_MARGIN = 2.4;
 THICKNESS = 2.4;
@@ -8,7 +8,7 @@ FLOOR_THICKNESS = 3;
 BACKPLATE_THICKNESS = 4.6;
 CHAMFER_SIDE = 3;
 CHAMFER_TOP = 0.77;
-SKADIS_BACKPLATE = false;
+SKADIS_BACKPLATE = true;
 
 // CALCULATED
 BACKPLATE_EXTRA_DISTANCE = SKADIS_BACKPLATE ? SKADIS_TOTAL_DEPTH() - BACKPLATE_THICKNESS : 0;
@@ -143,7 +143,7 @@ module skadis_backplate()
         union()
         {
             if(skadis_distance % 2 == 0) {
-                translate(
+                #translate(
                 [ TOTAL_WIDTH / 2, BACKPLATE_DISTANCE, (TOTAL_HEIGHT - FLOOR_THICKNESS - SKADIS_TOTAL_HEIGHT()) / 2 + FLOOR_THICKNESS])
                 rotate([ 0, 0, 180 ]) skadis_base();
             }

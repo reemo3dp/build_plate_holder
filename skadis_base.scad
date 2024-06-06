@@ -9,6 +9,6 @@ module skadis_base() {
 
 function SKADIS_HINGE_CENTER() = 5+(22/2);
 function SKADIS_TOTAL_HEIGHT() = 22+5+10;
-function SKADIS_TOTAL_DEPTH() = 5+4.5;
+function SKADIS_TOTAL_DEPTH() = 5+4.6;
 
 skadis_base();
