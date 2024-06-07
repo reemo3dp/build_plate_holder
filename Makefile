@@ -17,17 +17,21 @@ clean:
 build_plate_holder.scad: skadis_base.scad chamfer.scad
 
 stls/skadis_%.stl: build_plate_holder.scad
-	@mkdir ./stls/ 2>/dev/null || true
+	@mkdir -p ./stls/.thumbnails/ 2>/dev/null || true
 
 	$(OPENSCAD) -o $@ \
+		-o $@.thumbnail.png \
+		--render \
 		-D 'SKADIS_BACKPLATE=true' \
 		-D 'BUILD_PLATE_WIDTH=$(word 1,$(subst mm_, ,$*))' \
 		-D 'NUMBER_OF_PLATES=$(word 2,$(subst _, ,$*))' \
 		$<
 stls/standing_%.stl: build_plate_holder.scad
-	@mkdir ./stls/ 2>/dev/null || true
+	@mkdir -p ./stls/.thumbnails/ 2>/dev/null || true
 
 	$(OPENSCAD) -o $@ \
+		-o $@.thumbnail.png \
+		--render \
 		-D 'SKADIS_BACKPLATE=false' \
 		-D 'BUILD_PLATE_WIDTH=$(word 1,$(subst mm_, ,$*))' \
 		-D 'NUMBER_OF_PLATES=$(word 2,$(subst _, ,$*))' \
