@@ -9,6 +9,9 @@ BACKPLATE_THICKNESS = 4.6;
 CHAMFER_SIDE = 3;
 CHAMFER_TOP = 0.77;
 SKADIS_BACKPLATE = true;
+STAIRCASE=false;
+STAIRCASE_GAP=10;
+
 
 // CALCULATED
 BACKPLATE_EXTRA_DISTANCE = SKADIS_BACKPLATE ? SKADIS_TOTAL_DEPTH() - BACKPLATE_THICKNESS : 0;
@@ -22,6 +25,8 @@ TOTAL_DEPTH_PER_PLATE = WALL_THICKNESS + THICKNESS;
 TOTAL_DEPTH = TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES + BACKPLATE_DISTANCE;
 TOTAL_HEIGHT = FLANGE_HEIGHT + FLOOR_THICKNESS;
 CHAMFER_LENGTH = sqrt(2 * CHAMFER_SIDE ^ 2);
+BOTTOM_OFFSET = STAIRCASE ? STAIRCASE_GAP*(NUMBER_OF_PLATES-1) : 0;
+MAX_HEIGHT  = STAIRCASE ? BOTTOM_OFFSET + TOTAL_HEIGHT : TOTAL_HEIGHT;
 
 SKADIS_Y_DIST = 40;
 
@@ -46,23 +51,27 @@ module build_plate_holder()
             edge_chamfers();
             for (i = [1:NUMBER_OF_PLATES - 1])
             {
-                translate([ 0, -i * TOTAL_DEPTH_PER_PLATE, 0 ]) 
-                    single_plate_segment_top_chamfer();
+                if(!STAIRCASE) {
+                    translate([ 0, -i * TOTAL_DEPTH_PER_PLATE, 0 ]) 
+                        single_plate_segment_top_chamfer();
+                }
                 #translate([ 0, -i * TOTAL_DEPTH_PER_PLATE + WALL_THICKNESS/2, 0 ]) 
                     side_cylinder();
             }
-            if(SKADIS_BACKPLATE) {
-                backplate_segment_top_chamfer();
-            } else {
-                single_plate_segment_top_chamfer();
+            if(!STAIRCASE) {
+                if(SKADIS_BACKPLATE) {
+                    backplate_segment_top_chamfer();
+                } else {
+                    single_plate_segment_top_chamfer();
+                }
             }
         }
     }
 }
 
 module side_cylinder() {
-    cylinder(h = TOTAL_HEIGHT, r = WALL_THICKNESS/2, $fn = 100);
-    translate([TOTAL_WIDTH, 0, 0]) cylinder(h = TOTAL_HEIGHT, r = WALL_THICKNESS/2, $fn = 100);
+    translate([0, 0, -BOTTOM_OFFSET]) cylinder(h = MAX_HEIGHT  , r = WALL_THICKNESS/2, $fn = 100);
+    translate([TOTAL_WIDTH, 0, -BOTTOM_OFFSET]) cylinder(h = MAX_HEIGHT  , r = WALL_THICKNESS/2, $fn = 100);
 }
 
 module standing_backplate()
@@ -71,6 +80,7 @@ module standing_backplate()
     {
         flanges();
         cube([ TOTAL_WIDTH, WALL_THICKNESS, TOTAL_HEIGHT ]);
+        
     }
 }
 
@@ -83,7 +93,11 @@ module build_plate_segments()
         {
             for (i = [0:NUMBER_OF_PLATES - 1])
             {
-                translate([ 0, -i * TOTAL_DEPTH_PER_PLATE, 0 ]) single_plate_segment();
+                height = STAIRCASE ? STAIRCASE_GAP * (-i) : 0;
+                translate([ 0, -i * TOTAL_DEPTH_PER_PLATE, height  ]) single_plate_segment();
+                if(STAIRCASE) {
+                    #translate([0, -i * TOTAL_DEPTH_PER_PLATE, -BOTTOM_OFFSET]) cube([TOTAL_WIDTH, TOTAL_DEPTH_PER_PLATE, STAIRCASE_GAP * (NUMBER_OF_PLATES-i)]);
+                }
             }
         }
         logo();
@@ -112,15 +126,15 @@ module build_plate_segments()
 module edge_chamfers()
 {
     
-    translate([ 0, BACKPLATE_DISTANCE - CHAMFER_LENGTH / 2, 0 ]) rotate([ 0, 0, 45 ])
-        cube([ CHAMFER_SIDE, CHAMFER_SIDE, TOTAL_HEIGHT ]);
-    translate([ TOTAL_WIDTH, BACKPLATE_DISTANCE - CHAMFER_LENGTH / 2, 0 ]) rotate([ 0, 0, 45 ])
-        cube([ CHAMFER_SIDE, CHAMFER_SIDE, TOTAL_HEIGHT ]);
+    translate([ 0, BACKPLATE_DISTANCE - CHAMFER_LENGTH / 2, -BOTTOM_OFFSET ]) rotate([ 0, 0, 45 ])
+        cube([ CHAMFER_SIDE, CHAMFER_SIDE, MAX_HEIGHT ]);
+    translate([ TOTAL_WIDTH, BACKPLATE_DISTANCE - CHAMFER_LENGTH / 2, -BOTTOM_OFFSET ]) rotate([ 0, 0, 45 ])
+        cube([ CHAMFER_SIDE, CHAMFER_SIDE, MAX_HEIGHT ]);
 
-    translate([ 0, BACKPLATE_DISTANCE - CHAMFER_LENGTH / 2 - TOTAL_DEPTH, 0 ]) rotate([ 0, 0, 45 ])
-        cube([ CHAMFER_SIDE, CHAMFER_SIDE, TOTAL_HEIGHT ]);
-    translate([ TOTAL_WIDTH, BACKPLATE_DISTANCE - CHAMFER_LENGTH / 2 - TOTAL_DEPTH, 0 ]) rotate([ 0, 0, 45 ])
-        cube([ CHAMFER_SIDE, CHAMFER_SIDE, TOTAL_HEIGHT ]);
+    translate([ 0, BACKPLATE_DISTANCE - CHAMFER_LENGTH / 2 - TOTAL_DEPTH, -BOTTOM_OFFSET ]) rotate([ 0, 0, 45 ])
+        cube([ CHAMFER_SIDE, CHAMFER_SIDE, MAX_HEIGHT ]);
+    translate([ TOTAL_WIDTH, BACKPLATE_DISTANCE - CHAMFER_LENGTH / 2 - TOTAL_DEPTH, -BOTTOM_OFFSET ]) rotate([ 0, 0, 45 ])
+        cube([ CHAMFER_SIDE, CHAMFER_SIDE, MAX_HEIGHT ]);
 }
 
 module skadis_backplate()
@@ -137,8 +151,8 @@ module skadis_backplate()
             translate([ TOTAL_WIDTH - SIDE_THICKNESS, 0, 0 ])
                 cube([ SIDE_THICKNESS, BACKPLATE_DISTANCE, TOTAL_HEIGHT ]);
             // backplate
-            translate([ 0, BACKPLATE_DISTANCE - BACKPLATE_THICKNESS, 0 ])
-                cube([ TOTAL_WIDTH, BACKPLATE_THICKNESS, TOTAL_HEIGHT ]);
+            translate([ 0, BACKPLATE_DISTANCE - BACKPLATE_THICKNESS, -BOTTOM_OFFSET ])
+                cube([ TOTAL_WIDTH, BACKPLATE_THICKNESS, MAX_HEIGHT ]);
         }
         union()
         {
