@@ -2,7 +2,7 @@ OPENSCAD ?= openscad
 
 .PHONY: all clean
 
-SIZES := 120mm 180mm 235mm 250mm 256mm 300mm 350mm
+SIZES := 120mm 180mm 235mm 254mm 256mm 305mm 355mm
 NUMBERS := 2 3 4 5
 STYLE := staircase level
 LOGO := voron r3d
