@@ -25,7 +25,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          name: ${{ needs.generate-version.outputs.trunkver }}
-          tag_name: ${{ needs.generate-version.outputs.trunkver }}
+          name: ${{ steps.trunkver.outputs.trunkver }}
+          tag_name: ${{ steps.trunkver.outputs.trunkver }}
           files: |
             stls/*.stl
