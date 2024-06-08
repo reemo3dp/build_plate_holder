@@ -1,16 +1,18 @@
 NUMBER_OF_PLATES = 3;
-BUILD_PLATE_WIDTH = 120;
+BUILD_PLATE_WIDTH = 350;
+THICKNESS_MULTIPLIER = BUILD_PLATE_WIDTH/120;
 EXTRA_MARGIN = 2.4;
-THICKNESS = 2.4;
-WALL_THICKNESS = 2.4;
-SIDE_THICKNESS = 4.8;
-FLOOR_THICKNESS = 3;
+THICKNESS = 2.4*THICKNESS_MULTIPLIER;
+WALL_THICKNESS = 2.4*THICKNESS_MULTIPLIER;
+SIDE_THICKNESS = 4.8*THICKNESS_MULTIPLIER;
+FLOOR_THICKNESS = 3*THICKNESS_MULTIPLIER;
 BACKPLATE_THICKNESS = 4.6;
-CHAMFER_SIDE = 3;
-CHAMFER_TOP = 0.77;
+CHAMFER_SIDE = 3*THICKNESS_MULTIPLIER;
+CHAMFER_TOP = 0.77*THICKNESS_MULTIPLIER;
 SKADIS_BACKPLATE = true;
-STAIRCASE=false;
+STAIRCASE=true;
 STAIRCASE_GAP=10;
+LOGO="r3d";
 
 
 // CALCULATED
@@ -27,6 +29,7 @@ TOTAL_HEIGHT = FLANGE_HEIGHT + FLOOR_THICKNESS;
 CHAMFER_LENGTH = sqrt(2 * CHAMFER_SIDE ^ 2);
 BOTTOM_OFFSET = STAIRCASE ? STAIRCASE_GAP*(NUMBER_OF_PLATES-1) : 0;
 MAX_HEIGHT  = STAIRCASE ? BOTTOM_OFFSET + TOTAL_HEIGHT : TOTAL_HEIGHT;
+LOGO_FILE = LOGO == "voron" ? "voron.svg" : "reemo3dp.svg";
 
 SKADIS_Y_DIST = 40;
 
@@ -55,10 +58,10 @@ module build_plate_holder()
                     translate([ 0, -i * TOTAL_DEPTH_PER_PLATE, 0 ]) 
                         single_plate_segment_top_chamfer();
                 }
-                #translate([ 0, -i * TOTAL_DEPTH_PER_PLATE + WALL_THICKNESS/2, 0 ]) 
+                translate([ 0, -i * TOTAL_DEPTH_PER_PLATE + WALL_THICKNESS/2, 0 ]) 
                     side_cylinder();
             }
-            if(!STAIRCASE) {
+            if(true) {
                 if(SKADIS_BACKPLATE) {
                     backplate_segment_top_chamfer();
                 } else {
@@ -76,11 +79,16 @@ module side_cylinder() {
 
 module standing_backplate()
 {
-    translate([ 0, 0, 0 ]) union()
-    {
-        flanges();
-        cube([ TOTAL_WIDTH, WALL_THICKNESS, TOTAL_HEIGHT ]);
-        
+    difference() {
+        union()
+        {
+            flanges();
+            cube([ TOTAL_WIDTH, WALL_THICKNESS, TOTAL_HEIGHT ]);
+            if(STAIRCASE) {
+                translate([0, 0, -BOTTOM_OFFSET]) cube([TOTAL_WIDTH, WALL_THICKNESS, BOTTOM_OFFSET]);
+                
+            }
+        }
     }
 }
 
@@ -94,9 +102,15 @@ module build_plate_segments()
             for (i = [0:NUMBER_OF_PLATES - 1])
             {
                 height = STAIRCASE ? STAIRCASE_GAP * (-i) : 0;
-                translate([ 0, -i * TOTAL_DEPTH_PER_PLATE, height  ]) single_plate_segment();
+                translate([ 0, -i * TOTAL_DEPTH_PER_PLATE, height  ]) 
+                    difference() { 
+                        single_plate_segment();
+                        if(STAIRCASE && i > 0) {
+                            single_plate_segment_top_chamfer();
+                        }
+                    }
                 if(STAIRCASE) {
-                    #translate([0, -i * TOTAL_DEPTH_PER_PLATE, -BOTTOM_OFFSET]) cube([TOTAL_WIDTH, TOTAL_DEPTH_PER_PLATE, STAIRCASE_GAP * (NUMBER_OF_PLATES-i)]);
+                    translate([0, -(i+1) * TOTAL_DEPTH_PER_PLATE, -BOTTOM_OFFSET]) cube([TOTAL_WIDTH, TOTAL_DEPTH_PER_PLATE, STAIRCASE_GAP * (NUMBER_OF_PLATES-i-1)]);
                 }
             }
         }
@@ -117,9 +131,9 @@ module build_plate_segments()
         offset_left = (BOTTOM_FLANGE_WIDTH - (BOTTOM_FLANGE_WIDTH - TOP_FLANGE_WIDTH) / TOTAL_HEIGHT * height) / 2;
         
         
-        translate([offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = WALL_THICKNESS/2, convexity = 10) import(file = "voron.svg");
+        translate([offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height-BOTTOM_OFFSET])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = 1.8, convexity = 10) import(file = LOGO_FILE);
         
-        translate([TOTAL_WIDTH-offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = WALL_THICKNESS/2, convexity = 10) import(file = "voron.svg");
+        translate([TOTAL_WIDTH-offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height-BOTTOM_OFFSET])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = 1.8, convexity = 10) import(file = LOGO_FILE);
 
     }
 
@@ -145,7 +159,8 @@ module skadis_backplate()
         union()
         {
             // floor
-            cube([ TOTAL_WIDTH, BACKPLATE_DISTANCE, FLOOR_THICKNESS ]);
+            translate([0, 0, -BOTTOM_OFFSET]) cube([ TOTAL_WIDTH, BACKPLATE_DISTANCE, FLOOR_THICKNESS + BOTTOM_OFFSET ]);
+            
             // walls
             cube([ SIDE_THICKNESS, BACKPLATE_DISTANCE, TOTAL_HEIGHT ]);
             translate([ TOTAL_WIDTH - SIDE_THICKNESS, 0, 0 ])
@@ -174,12 +189,14 @@ module skadis_backplate()
 
 module single_plate_segment()
 {
-    translate([ 0, -TOTAL_DEPTH_PER_PLATE, 0 ]) union()
-    {
-        flanges();
-        cube([ TOTAL_WIDTH, TOTAL_DEPTH_PER_PLATE, FLOOR_THICKNESS ]);
-        cube([ SIDE_THICKNESS, TOTAL_DEPTH_PER_PLATE, FLANGE_HEIGHT + FLOOR_THICKNESS ]);
-        translate([ TOTAL_WIDTH - SIDE_THICKNESS, 0 ]) cube([ SIDE_THICKNESS, TOTAL_DEPTH_PER_PLATE, TOTAL_HEIGHT ]);
+    translate([ 0, -TOTAL_DEPTH_PER_PLATE, 0 ]) difference() {
+        union()
+        {
+            flanges();
+            cube([ TOTAL_WIDTH, TOTAL_DEPTH_PER_PLATE, FLOOR_THICKNESS ]);
+            cube([ SIDE_THICKNESS, TOTAL_DEPTH_PER_PLATE, FLANGE_HEIGHT + FLOOR_THICKNESS ]);
+            translate([ TOTAL_WIDTH - SIDE_THICKNESS, 0 ]) cube([ SIDE_THICKNESS, TOTAL_DEPTH_PER_PLATE, TOTAL_HEIGHT ]);
+        }
     }
 }
 
