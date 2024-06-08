@@ -20,12 +20,6 @@ README.md: stls/*.stl
 	@echo "# SKÅDIS Build Plate Holder" > README.md
 	@echo "This is a customizable build plate holder for the IKEA SKÅDIS pegboard system." >> README.md
 	@echo "" >> README.md
-	@echo "## Gallery" >> README.md
-
-	for file in stls/*.stl; do \
-		filename=$$(basename -s .stl $$file); \
-		echo "<figure><a href="$$file"><img src='./stls/.thumbnails/$${filename}.png' width='300' /></a><br/><figcaption>$$filename</figcaption></figure>" >> README.md; \
-	done
 
 
 build_plate_holder.scad: skadis_base.scad chamfer.scad
