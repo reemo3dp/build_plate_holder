@@ -25,6 +25,6 @@ jobs:
           set -euxo pipefail
           git config --global user.name "GitHub Actions"
           git config --global user.email "githubactions@github.com"
-          git add -f stls/
+          git add -f stls/ README.md
           git commit -m "Render STLs"
           git push origin HEAD:${GITHUB_REF}
