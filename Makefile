@@ -24,7 +24,7 @@ README.md: stls/*.stl
 
 	for file in stls/*.stl; do \
 		filename=$$(basename -s .stl $$file); \
-		echo "<figure><a href="$$file"><img src='./stls/.thumbnails/$${filename}.png' width='300' /><figcaption>$$filename</figcaption></a></figure>" >> README.md; \
+		echo "<figure><a href="$$file"><img src='./stls/.thumbnails/$${filename}.png' width='300' /></a><figcaption>$$filename</figcaption></figure>" >> README.md; \
 	done
 
 
