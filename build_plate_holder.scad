@@ -18,7 +18,7 @@ LOGO="r3d";
 // CALCULATED
 BACKPLATE_EXTRA_DISTANCE = SKADIS_BACKPLATE ? SKADIS_TOTAL_DEPTH() - BACKPLATE_THICKNESS : 0;
 BACKPLATE_DISTANCE = SKADIS_BACKPLATE ? BACKPLATE_THICKNESS + BACKPLATE_EXTRA_DISTANCE : WALL_THICKNESS;
-FLANGE_HEIGHT = max(40, BUILD_PLATE_WIDTH / 3);
+FLANGE_HEIGHT = min(60, max(40, BUILD_PLATE_WIDTH / 3));
 TOP_FLANGE_WIDTH = BUILD_PLATE_WIDTH / 6;
 BOTTOM_FLANGE_WIDTH = BUILD_PLATE_WIDTH / 4;
 PLATE_WIDTH = BUILD_PLATE_WIDTH + EXTRA_MARGIN;
@@ -30,6 +30,7 @@ CHAMFER_LENGTH = sqrt(2 * CHAMFER_SIDE ^ 2);
 BOTTOM_OFFSET = STAIRCASE ? STAIRCASE_GAP*(NUMBER_OF_PLATES-1) : 0;
 MAX_HEIGHT  = STAIRCASE ? BOTTOM_OFFSET + TOTAL_HEIGHT : TOTAL_HEIGHT;
 LOGO_FILE = LOGO == "voron" ? "voron.svg" : "reemo3dp.svg";
+LOGO_DEPTH=0.8;
 
 SKADIS_Y_DIST = 40;
 
@@ -131,9 +132,9 @@ module build_plate_segments()
         offset_left = (BOTTOM_FLANGE_WIDTH - (BOTTOM_FLANGE_WIDTH - TOP_FLANGE_WIDTH) / TOTAL_HEIGHT * height) / 2;
         
         
-        translate([offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height-BOTTOM_OFFSET])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = 1.8, convexity = 10) import(file = LOGO_FILE);
+        translate([offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height-BOTTOM_OFFSET])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = LOGO_DEPTH, convexity = 10) import(file = LOGO_FILE);
         
-        translate([TOTAL_WIDTH-offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height-BOTTOM_OFFSET])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = 1.8, convexity = 10) import(file = LOGO_FILE);
+        translate([TOTAL_WIDTH-offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height-BOTTOM_OFFSET])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = LOGO_DEPTH, convexity = 10) import(file = LOGO_FILE);
 
     }
 
