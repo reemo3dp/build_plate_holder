@@ -123,8 +123,8 @@ module build_plate_segments()
 
     module logo()
     {
-        height = 15 * BUILD_PLATE_WIDTH/120;
         width = 15 * BUILD_PLATE_WIDTH/120;
+        height = min(TOTAL_HEIGHT-width-10, 15 * BUILD_PLATE_WIDTH/120);
 
         // Voron logo is 1mm x 1mm
         
