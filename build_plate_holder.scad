@@ -1,5 +1,5 @@
 NUMBER_OF_PLATES = 4;
-BUILD_PLATE_WIDTH = 235;
+BUILD_PLATE_WIDTH = 350;
 THICKNESS_MULTIPLIER = BUILD_PLATE_WIDTH/120;
 EXTRA_MARGIN = 2.4;
 THICKNESS = 2.4;
@@ -155,6 +155,7 @@ module edge_chamfers()
 module skadis_backplate()
 {
     skadis_distance = floor((TOTAL_WIDTH-50)/SKADIS_Y_DIST);
+    height = -BOTTOM_OFFSET+ floor(MAX_HEIGHT/20)*20 - SKADIS_TOTAL_HEIGHT();
     difference()
     {
         union()
@@ -174,15 +175,15 @@ module skadis_backplate()
         {
             if(skadis_distance % 2 == 0) {
                 #translate(
-                [ TOTAL_WIDTH / 2, BACKPLATE_DISTANCE, (TOTAL_HEIGHT - FLOOR_THICKNESS - SKADIS_TOTAL_HEIGHT()) / 2 + FLOOR_THICKNESS])
+                [ TOTAL_WIDTH / 2, BACKPLATE_DISTANCE, height] )
                 rotate([ 0, 0, 180 ]) skadis_base();
             }
 
             translate(
-                [ TOTAL_WIDTH / 2 + SKADIS_Y_DIST*skadis_distance / 2, BACKPLATE_DISTANCE, (TOTAL_HEIGHT - FLOOR_THICKNESS - SKADIS_TOTAL_HEIGHT()) / 2 + FLOOR_THICKNESS])
+                [ TOTAL_WIDTH / 2 + SKADIS_Y_DIST*skadis_distance / 2, BACKPLATE_DISTANCE, height])
                 rotate([ 0, 0, 180 ]) skadis_base();
             translate(
-                [ TOTAL_WIDTH / 2 - SKADIS_Y_DIST*skadis_distance /2, BACKPLATE_DISTANCE, (TOTAL_HEIGHT - FLOOR_THICKNESS - SKADIS_TOTAL_HEIGHT()) / 2 + FLOOR_THICKNESS])
+                [ TOTAL_WIDTH / 2 - SKADIS_Y_DIST*skadis_distance /2, BACKPLATE_DISTANCE, height])
                 rotate([ 0, 0, 180 ]) skadis_base();
         }
     }
