@@ -9,16 +9,22 @@ FLOOR_THICKNESS = 3*THICKNESS_MULTIPLIER;
 BACKPLATE_THICKNESS = 4.6;
 CHAMFER_SIDE = 3*THICKNESS_MULTIPLIER;
 CHAMFER_TOP = 0.77*THICKNESS_MULTIPLIER;
-SKADIS_BACKPLATE = true;
 STAIRCASE=true;
 STAIRCASE_GAP=10;
 LOGO="r3d";
 
+BACKPLATE="STANDING";
+
+SKADIS_BACKPLATE = BACKPLATE == "SKADIS";
+NO_BACKPLATE = BACKPLATE == "NONE";
+
+
+{};
 
 // CALCULATED
 BACKPLATE_EXTRA_DISTANCE = SKADIS_BACKPLATE ? SKADIS_TOTAL_DEPTH() - BACKPLATE_THICKNESS : 0;
 BACKPLATE_DISTANCE = SKADIS_BACKPLATE ? BACKPLATE_THICKNESS + BACKPLATE_EXTRA_DISTANCE : WALL_THICKNESS;
-FLANGE_HEIGHT = min(60, max(40, BUILD_PLATE_WIDTH / 3));
+FLANGE_HEIGHT = BUILD_PLATE_WIDTH/6;
 TOP_FLANGE_WIDTH = BUILD_PLATE_WIDTH / 6;
 BOTTOM_FLANGE_WIDTH = BUILD_PLATE_WIDTH / 4;
 PLATE_WIDTH = BUILD_PLATE_WIDTH + EXTRA_MARGIN;
@@ -31,6 +37,12 @@ BOTTOM_OFFSET = STAIRCASE ? STAIRCASE_GAP*(NUMBER_OF_PLATES-1) : 0;
 MAX_HEIGHT  = STAIRCASE ? BOTTOM_OFFSET + TOTAL_HEIGHT : TOTAL_HEIGHT;
 LOGO_FILE = LOGO == "voron" ? "voron.svg" : "reemo3dp.svg";
 LOGO_DEPTH=0.8;
+LOGO_WIDTH = 15 * BUILD_PLATE_WIDTH/120;
+LOGO_HEIGHT = min(TOTAL_HEIGHT-LOGO_WIDTH-10, 15 * BUILD_PLATE_WIDTH/120);
+LOGO_OFFSET_LEFT = (BOTTOM_FLANGE_WIDTH - (BOTTOM_FLANGE_WIDTH - TOP_FLANGE_WIDTH) / TOTAL_HEIGHT * LOGO_HEIGHT) / 2;
+
+
+FUDGE=0.02;
 
 SKADIS_Y_DIST = 40;
 
@@ -45,6 +57,8 @@ module build_plate_holder()
         {
             if(SKADIS_BACKPLATE) {
                 skadis_backplate();
+            } else if (NO_BACKPLATE) {
+                no_backplate();
             } else {
                 standing_backplate();
             }
@@ -62,15 +76,56 @@ module build_plate_holder()
                 translate([ 0, -i * TOTAL_DEPTH_PER_PLATE + WALL_THICKNESS/2, 0 ]) 
                     side_cylinder();
             }
-            if(true) {
-                if(SKADIS_BACKPLATE) {
-                    backplate_segment_top_chamfer();
-                } else {
-                    single_plate_segment_top_chamfer();
-                }
+            if(SKADIS_BACKPLATE) {
+                backplate_segment_top_chamfer();
+            } else {
+                single_plate_segment_top_chamfer();
+            }
+            if(!SKADIS_BACKPLATE) {
+                stand_cutout();
             }
         }
     }
+    if(!SKADIS_BACKPLATE) {
+        stand();
+    }
+}
+
+module stand_block(stand_width, stand_height) {
+    stand_depth = TOTAL_DEPTH*2;
+    difference() {
+        cube([stand_width, stand_depth, stand_height], center = true);
+        translate([-stand_width/2, -stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
+        translate([stand_width/2, -stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
+        translate([-stand_width/2, stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
+        translate([stand_width/2, stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
+    }
+}
+
+module stand() {
+    stand_width = BOTTOM_FLANGE_WIDTH / 3 - FUDGE*2;
+    stand_height = FLOOR_THICKNESS/2 - FUDGE;
+    
+    LOGO_LOGO_OFFSET_LEFT = (BOTTOM_FLANGE_WIDTH - (BOTTOM_FLANGE_WIDTH - TOP_FLANGE_WIDTH) / TOTAL_HEIGHT * LOGO_HEIGHT) / 2;
+    
+    translate([LOGO_OFFSET_LEFT, BACKPLATE_DISTANCE-TOTAL_DEPTH/2, FLOOR_THICKNESS/4-BOTTOM_OFFSET])  
+        stand_block(stand_width, stand_height);
+        
+    translate([TOTAL_WIDTH-LOGO_OFFSET_LEFT, BACKPLATE_DISTANCE-TOTAL_DEPTH/2, FLOOR_THICKNESS/4-BOTTOM_OFFSET]) 
+        stand_block(stand_width, stand_height);
+
+}
+
+module stand_cutout() {
+    stand_width = BOTTOM_FLANGE_WIDTH / 3 - FUDGE*2;
+    
+    
+    translate([LOGO_OFFSET_LEFT, BACKPLATE_DISTANCE-TOTAL_DEPTH/2, FLOOR_THICKNESS/4-BOTTOM_OFFSET])  
+        cube([stand_width, TOTAL_DEPTH, FLOOR_THICKNESS/2], center = true);;
+        
+    translate([TOTAL_WIDTH-LOGO_OFFSET_LEFT, BACKPLATE_DISTANCE-TOTAL_DEPTH/2, FLOOR_THICKNESS/4-BOTTOM_OFFSET])  
+        cube([stand_width, TOTAL_DEPTH, FLOOR_THICKNESS/2], center = true);;
+
 }
 
 module side_cylinder() {
@@ -92,6 +147,22 @@ module standing_backplate()
         }
     }
 }
+
+module no_backplate()
+{
+    difference() {
+        union()
+        {
+            flanges();
+            cube([ TOTAL_WIDTH, WALL_THICKNESS, FLOOR_THICKNESS ]);
+            if(STAIRCASE) {
+                translate([0, 0, -BOTTOM_OFFSET]) cube([TOTAL_WIDTH, WALL_THICKNESS, BOTTOM_OFFSET]);
+                
+            }
+        }
+    }
+}
+
 
 
 module build_plate_segments()
@@ -121,20 +192,14 @@ module build_plate_segments()
 
 }
 
-    module logo()
-    {
-        width = 15 * BUILD_PLATE_WIDTH/120;
-        height = min(TOTAL_HEIGHT-width-10, 15 * BUILD_PLATE_WIDTH/120);
-
-        // Voron logo is 1mm x 1mm
+module logo() {
         
 
-        offset_left = (BOTTOM_FLANGE_WIDTH - (BOTTOM_FLANGE_WIDTH - TOP_FLANGE_WIDTH) / TOTAL_HEIGHT * height) / 2;
+        // Voron logo is 1mm x 1mm        
         
+        translate([LOGO_OFFSET_LEFT-LOGO_WIDTH/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, LOGO_HEIGHT-BOTTOM_OFFSET])  scale([LOGO_WIDTH, -1, LOGO_WIDTH]) rotate([90, 0, 0]) linear_extrude(height = LOGO_DEPTH, convexity = 10) import(file = LOGO_FILE);
         
-        translate([offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height-BOTTOM_OFFSET])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = LOGO_DEPTH, convexity = 10) import(file = LOGO_FILE);
-        
-        translate([TOTAL_WIDTH-offset_left-width/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, height-BOTTOM_OFFSET])  scale([width, -1, width]) rotate([90, 0, 0]) linear_extrude(height = LOGO_DEPTH, convexity = 10) import(file = LOGO_FILE);
+        translate([TOTAL_WIDTH-LOGO_OFFSET_LEFT-LOGO_WIDTH/2, -TOTAL_DEPTH_PER_PLATE * NUMBER_OF_PLATES-0.1, LOGO_HEIGHT-BOTTOM_OFFSET])  scale([LOGO_WIDTH, -1, LOGO_WIDTH]) rotate([90, 0, 0]) linear_extrude(height = LOGO_DEPTH, convexity = 10) import(file = LOGO_FILE);
 
     }
 

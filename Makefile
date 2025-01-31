@@ -17,6 +17,11 @@ all: $(foreach size,$(SIZES),\
 			$(foreach style,$(STYLE),\
 				$(foreach logo,$(LOGO),\
 					stls/standing_$(size)_$(style)_$(logo)_$(number).stl))))
+	 $(foreach size,$(SIZES),\
+	 	$(foreach number,$(NUMBERS),\
+			$(foreach style,$(STYLE),\
+				$(foreach logo,$(LOGO),\
+					stls/no_back_$(size)_$(style)_$(logo)_$(number).stl)))) \
 	$(MAKE) README.md
 
 
@@ -38,7 +43,7 @@ stls/skadis_%.stl: build_plate_holder.scad
 	$(OPENSCAD) -o $@ \
 		-o ./stls/.thumbnails/$(basename $(notdir $@)).png \
 		--render \
-		-D 'SKADIS_BACKPLATE=true' \
+		-D 'BACKPLATE="SKADIS"' \
 		-D 'BUILD_PLATE_WIDTH=$(word 1,$(subst mm_, ,$*))' \
 		-D 'STAIRCASE=$(if $(filter staircase,$(word 2,$(subst _, ,$*))),true,false)' \
 		-D 'LOGO="$(word 3,$(subst _, ,$*))"' \
@@ -52,7 +57,21 @@ stls/standing_%.stl: build_plate_holder.scad
 	$(OPENSCAD) -o $@ \
 		-o ./stls/.thumbnails/$(basename $(notdir $@)).png \
 		--render \
-		-D 'SKADIS_BACKPLATE=false' \
+		-D 'BACKPLATE="STANDING"' \
+		-D 'BUILD_PLATE_WIDTH=$(word 1,$(subst mm_, ,$*))' \
+		-D 'STAIRCASE=$(if $(filter staircase,$(word 2,$(subst _, ,$*))),true,false)' \
+		-D 'LOGO="$(word 3,$(subst _, ,$*))"' \
+		-D 'NUMBER_OF_PLATES=$(word 4,$(subst _, ,$*))' \
+		$<
+
+stls/no_back_%.stl: build_plate_holder.scad
+	@mkdir -p ./stls/.thumbnails/ 2>/dev/null || true
+	
+
+	$(OPENSCAD) -o $@ \
+		-o ./stls/.thumbnails/$(basename $(notdir $@)).png \
+		--render \
+		-D 'BACKPLATE="NONE"' \
 		-D 'BUILD_PLATE_WIDTH=$(word 1,$(subst mm_, ,$*))' \
 		-D 'STAIRCASE=$(if $(filter staircase,$(word 2,$(subst _, ,$*))),true,false)' \
 		-D 'LOGO="$(word 3,$(subst _, ,$*))"' \
