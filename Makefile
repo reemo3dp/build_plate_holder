@@ -21,7 +21,7 @@ all: $(foreach size,$(SIZES),\
 	 	$(foreach number,$(NUMBERS),\
 			$(foreach style,$(STYLE),\
 				$(foreach logo,$(LOGO),\
-					stls/no_back_$(size)_$(style)_$(logo)_$(number).stl)))) \
+					stls/noback_$(size)_$(style)_$(logo)_$(number).stl)))) \
 	$(MAKE) README.md
 
 
@@ -64,7 +64,7 @@ stls/standing_%.stl: build_plate_holder.scad
 		-D 'NUMBER_OF_PLATES=$(word 4,$(subst _, ,$*))' \
 		$<
 
-stls/no_back_%.stl: build_plate_holder.scad
+stls/noback_%.stl: build_plate_holder.scad
 	@mkdir -p ./stls/.thumbnails/ 2>/dev/null || true
 	
 
