@@ -9,7 +9,7 @@ FLOOR_THICKNESS = 3*THICKNESS_MULTIPLIER;
 BACKPLATE_THICKNESS = 4.6;
 CHAMFER_SIDE = 3*THICKNESS_MULTIPLIER;
 CHAMFER_TOP = 0.77*THICKNESS_MULTIPLIER;
-STAIRCASE=false;
+STAIRCASE=true;
 STAIRCASE_GAP=10;
 LOGO="voron";
 
@@ -19,7 +19,8 @@ SKADIS_BACKPLATE = BACKPLATE == "SKADIS";
 NO_BACKPLATE = BACKPLATE == "NONE";
 
 
-{};
+
+
 
 // CALCULATED
 BACKPLATE_EXTRA_DISTANCE = SKADIS_BACKPLATE ? SKADIS_TOTAL_DEPTH() - BACKPLATE_THICKNESS : 0;
@@ -42,12 +43,17 @@ LOGO_HEIGHT = (TOTAL_HEIGHT-LOGO_WIDTH)/2;
 LOGO_OFFSET_LEFT = (BOTTOM_FLANGE_WIDTH - (BOTTOM_FLANGE_WIDTH - TOP_FLANGE_WIDTH) / TOTAL_HEIGHT * LOGO_HEIGHT) / 2;
 
 
-FUDGE=0.02;
+FUDGE=0.0;
 
 SKADIS_Y_DIST = 40;
 
 use <chamfer.scad>;
 use <skadis_base.scad>;
+
+
+
+build_plate_holder();
+
 
 module build_plate_holder()
 {
@@ -93,23 +99,26 @@ module build_plate_holder()
 
 module stand_block(stand_width, cutout_height, stand_height) {
     stand_depth = TOTAL_DEPTH*2;
-    #translate([0, 0, stand_height/2]) difference() {
-        cube([stand_width, stand_depth, stand_height], center = true);
-        #translate([0, 0, (cutout_height+FUDGE)/2]) 
-            cube([stand_width, TOTAL_DEPTH, cutout_height+FUDGE*2], center = true);
+    cutout_fudge = FUDGE/2;
+    cutout_height_with_fudge = cutout_height + cutout_fudge;
+    
+    translate([0, 0, stand_height/2]) 
+        difference() {
+            cube([stand_width, stand_depth, stand_height], center = true);
             
+            translate([0, 0, -cutout_height_with_fudge/2 + cutout_height ]) 
+                #cube([stand_width+cutout_fudge, TOTAL_DEPTH+cutout_fudge, cutout_height_with_fudge], center = true);
             
-            
-        translate([-stand_width/2, -stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
-        translate([stand_width/2, -stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
-        translate([-stand_width/2, stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
-        translate([stand_width/2, stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
+            translate([-stand_width/2, -stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
+            translate([stand_width/2, -stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
+            translate([-stand_width/2, stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
+            translate([stand_width/2, stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
     }
 }
 
 module stand() {
-    stand_width = BOTTOM_FLANGE_WIDTH / 3 - FUDGE*2;
-    cutout_height = FLOOR_THICKNESS/2 - FUDGE;
+    stand_width = BOTTOM_FLANGE_WIDTH / 3;
+    cutout_height = FLOOR_THICKNESS/2;
     stand_height = FLOOR_THICKNESS;
     
     LOGO_LOGO_OFFSET_LEFT = (BOTTOM_FLANGE_WIDTH - (BOTTOM_FLANGE_WIDTH - TOP_FLANGE_WIDTH) / TOTAL_HEIGHT * LOGO_HEIGHT) / 2;
@@ -123,7 +132,7 @@ module stand() {
 }
 
 module stand_cutout() {
-    stand_width = BOTTOM_FLANGE_WIDTH / 3 - FUDGE*2;
+    stand_width = BOTTOM_FLANGE_WIDTH / 3 + FUDGE;
     
     
     translate([LOGO_OFFSET_LEFT, BACKPLATE_DISTANCE-TOTAL_DEPTH/2, FLOOR_THICKNESS/4-BOTTOM_OFFSET])  
@@ -296,4 +305,3 @@ module flange()
         points = [ [ 0, 0 ], [ 0, FLANGE_HEIGHT ], [ TOP_FLANGE_WIDTH, FLANGE_HEIGHT ], [ BOTTOM_FLANGE_WIDTH, 0 ] ]);
 }
 
-build_plate_holder();
