@@ -88,7 +88,7 @@ module build_plate_holder()
                 single_plate_segment_top_chamfer();
             }
             if(!SKADIS_BACKPLATE) {
-                stand_cutout();
+                //stand_cutout();
             }
         }
     }

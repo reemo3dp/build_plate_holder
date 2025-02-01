@@ -16,7 +16,7 @@ all: $(foreach size,$(SIZES),\
 	 	$(foreach number,$(NUMBERS),\
 			$(foreach style,$(STYLE),\
 				$(foreach logo,$(LOGO),\
-					stls/standing_$(size)_$(style)_$(logo)_$(number).stl))))
+					stls/standing_$(size)_$(style)_$(logo)_$(number).stl)))) \
 	 $(foreach size,$(SIZES),\
 	 	$(foreach number,$(NUMBERS),\
 			$(foreach style,$(STYLE),\
