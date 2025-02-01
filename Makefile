@@ -21,7 +21,7 @@ all: $(foreach size,$(SIZES),\
 	 	$(foreach number,$(NUMBERS),\
 			$(foreach style,$(STYLE),\
 				$(foreach logo,$(LOGO),\
-					stls/noback_$(size)_$(style)_$(logo)_$(number).stl)))) \
+					stls/noback_$(size)_$(style)_$(logo)_$(number).stl))))
 	$(MAKE) README.md
 
 
