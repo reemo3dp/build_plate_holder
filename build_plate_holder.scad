@@ -1,5 +1,5 @@
 NUMBER_OF_PLATES = 4;
-BUILD_PLATE_WIDTH = 350;
+BUILD_PLATE_WIDTH = 120;
 THICKNESS_MULTIPLIER = BUILD_PLATE_WIDTH/120;
 EXTRA_MARGIN = 2.4;
 THICKNESS = 2.4;
@@ -13,7 +13,7 @@ STAIRCASE=false;
 STAIRCASE_GAP=10;
 LOGO="voron";
 
-BACKPLATE="STANDING";
+BACKPLATE="NONE";
 
 SKADIS_BACKPLATE = BACKPLATE == "SKADIS";
 NO_BACKPLATE = BACKPLATE == "NONE";
@@ -91,10 +91,15 @@ module build_plate_holder()
     }
 }
 
-module stand_block(stand_width, stand_height) {
+module stand_block(stand_width, cutout_height, stand_height) {
     stand_depth = TOTAL_DEPTH*2;
-    difference() {
+    #translate([0, 0, stand_height/2]) difference() {
         cube([stand_width, stand_depth, stand_height], center = true);
+        #translate([0, 0, (cutout_height+FUDGE)/2]) 
+            cube([stand_width, TOTAL_DEPTH, cutout_height+FUDGE*2], center = true);
+            
+            
+            
         translate([-stand_width/2, -stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
         translate([stand_width/2, -stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
         translate([-stand_width/2, stand_depth/2, 0]) rotate([0, 0, 45]) cube([4, 4, stand_height], center = true);
@@ -104,15 +109,16 @@ module stand_block(stand_width, stand_height) {
 
 module stand() {
     stand_width = BOTTOM_FLANGE_WIDTH / 3 - FUDGE*2;
-    stand_height = FLOOR_THICKNESS/2 - FUDGE;
+    cutout_height = FLOOR_THICKNESS/2 - FUDGE;
+    stand_height = FLOOR_THICKNESS;
     
     LOGO_LOGO_OFFSET_LEFT = (BOTTOM_FLANGE_WIDTH - (BOTTOM_FLANGE_WIDTH - TOP_FLANGE_WIDTH) / TOTAL_HEIGHT * LOGO_HEIGHT) / 2;
     
-    translate([LOGO_OFFSET_LEFT, BACKPLATE_DISTANCE-TOTAL_DEPTH/2, FLOOR_THICKNESS/4-BOTTOM_OFFSET])  
-        stand_block(stand_width, stand_height);
+    translate([LOGO_OFFSET_LEFT, BACKPLATE_DISTANCE-TOTAL_DEPTH/2, -BOTTOM_OFFSET])  
+        stand_block(stand_width, cutout_height, stand_height);
         
-    translate([TOTAL_WIDTH-LOGO_OFFSET_LEFT, BACKPLATE_DISTANCE-TOTAL_DEPTH/2, FLOOR_THICKNESS/4-BOTTOM_OFFSET]) 
-        stand_block(stand_width, stand_height);
+    translate([TOTAL_WIDTH-LOGO_OFFSET_LEFT, BACKPLATE_DISTANCE-TOTAL_DEPTH/2, -BOTTOM_OFFSET]) 
+        stand_block(stand_width, cutout_height, stand_height);
 
 }
 
